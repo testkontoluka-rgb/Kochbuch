@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { processImage, dataUrlToBase64 } from '../utils/imageUtils.js';
+import { processImage, dataUrlToBase64 } from './imageUtils.js';
 import { IconCamera, IconText, IconLink, IconUpload, IconAlertCircle, IconX } from './Icons.jsx';
 
 /**

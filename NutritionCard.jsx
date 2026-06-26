@@ -1,4 +1,4 @@
-import { calcMacroPercent } from '../utils/nutrition.js';
+import { calcMacroPercent } from './nutrition.js';
 
 /**
  * NutritionCard — Signature-Element der App

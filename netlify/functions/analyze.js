@@ -2,12 +2,14 @@
  * Netlify Function: analyze
  * POST /api/analyze
  *
- * Verwendet Google Gemini (kostenlos via AI Studio).
+ * Verwendet Google Gemini via Netlify AI Gateway oder einen eigenen Gemini-Key.
  *
  * Umgebungsvariablen:
- *   GEMINI_API_KEY  — API-Key von aistudio.google.com (Pflicht, kostenlos)
- *   GEMINI_MODEL    — optional, Standard: gemini-2.0-flash
+ *   GEMINI_API_KEY  — wird von Netlify AI Gateway gesetzt oder als eigener Key hinterlegt
+ *   GEMINI_MODEL    — optional, Standard: gemini-3-flash-preview
  */
+
+import { GoogleGenAI } from '@google/genai';
 
 const SYSTEM_PROMPT = `Du bist ein Ernährungsexperte und Koch. Du erhältst ein Rezept als Bild(er) ODER als Text/Caption (evtl. mit Hashtags/Emojis). Aufgabe:
 1. Lies Titel und Zutaten mit Mengen aus (ignoriere Hashtags, Werbung, Beiwerk).
@@ -35,32 +37,20 @@ function extractJSON(raw) {
 /**
  * Ruft Gemini API auf (generateContent)
  */
-async function callGemini(parts, model, apiKey) {
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
-
-  const body = {
-    system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
+async function callGemini(parts, model) {
+  const ai = new GoogleGenAI({});
+  const response = await ai.models.generateContent({
+    model,
     contents: [{ role: 'user', parts }],
-    generationConfig: {
+    config: {
+      systemInstruction: SYSTEM_PROMPT,
       temperature: 0.2,
       maxOutputTokens: 2048,
       responseMimeType: 'application/json', // erzwingt reines JSON
     },
-  };
-
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
   });
 
-  if (!res.ok) {
-    const err = await res.text();
-    throw new Error(`Gemini API Fehler ${res.status}: ${err}`);
-  }
-
-  const data = await res.json();
-  return data.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
+  return response.text ?? '';
 }
 
 /**
@@ -86,13 +76,13 @@ function buildParts(body) {
 /**
  * Mit einem automatischen Retry bei JSON-Parsefehler
  */
-async function analyzeWithRetry(body, model, apiKey) {
+async function analyzeWithRetry(body, model) {
   const parts = buildParts(body);
   let lastError;
 
   for (let attempt = 1; attempt <= 2; attempt++) {
     try {
-      const raw    = await callGemini(parts, model, apiKey);
+      const raw    = await callGemini(parts, model);
       const parsed = extractJSON(raw);
       return parsed;
     } catch (err) {
@@ -109,15 +99,14 @@ export const handler = async (event) => {
     return { statusCode: 405, body: JSON.stringify({ error: 'Nur POST erlaubt.' }) };
   }
 
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) {
+  if (!process.env.GEMINI_API_KEY) {
     return {
       statusCode: 500,
       body: JSON.stringify({ error: 'GEMINI_API_KEY ist nicht konfiguriert.' }),
     };
   }
 
-  const model = process.env.GEMINI_MODEL || 'gemini-2.0.flash';
+  const model = process.env.GEMINI_MODEL || 'gemini-3-flash-preview';
 
   let body;
   try {
@@ -137,7 +126,7 @@ export const handler = async (event) => {
   }
 
   try {
-    const result = await analyzeWithRetry(body, model, apiKey);
+    const result = await analyzeWithRetry(body, model);
     return {
       statusCode: 200,
       headers: { 'Content-Type': 'application/json' },
