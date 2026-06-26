@@ -6,7 +6,7 @@
  *
  * Umgebungsvariablen:
  *   GEMINI_API_KEY  — API-Key von aistudio.google.com (Pflicht, kostenlos)
- *   GEMINI_MODEL    — optional, Standard: gemini-1.5-flash
+ *   GEMINI_MODEL    — optional, Standard: gemini-2.0-flash
  */
 
 const SYSTEM_PROMPT = `Du bist ein Ernährungsexperte und Koch. Du erhältst ein Rezept als Bild(er) ODER als Text/Caption (evtl. mit Hashtags/Emojis). Aufgabe:
@@ -117,7 +117,7 @@ export const handler = async (event) => {
     };
   }
 
-  const model = process.env.GEMINI_MODEL || 'gemini-1.5-flash';
+  const model = process.env.GEMINI_MODEL || 'gemini-2.0.flash';
 
   let body;
   try {
