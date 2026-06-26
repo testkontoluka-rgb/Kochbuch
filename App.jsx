@@ -2,13 +2,13 @@ import { useState, useCallback } from 'react';
 import {
   loadRecipes, saveRecipes, addRecipe, updateRecipe, deleteRecipe as deleteRec,
   loadCategories, saveCategories, addCategory as addCat, deleteCategory as deleteCat,
-} from './utils/storage.js';
-import BottomTabBar    from './components/BottomTabBar.jsx';
-import ScanScreen      from './components/ScanScreen.jsx';
-import ReviewScreen    from './components/ReviewScreen.jsx';
-import RecipesScreen   from './components/RecipesScreen.jsx';
-import CategoriesScreen from './components/CategoriesScreen.jsx';
-import Toast           from './components/Toast.jsx';
+} from './storage.js';
+import BottomTabBar    from './BottomTabBar.jsx';
+import ScanScreen      from './ScanScreen.jsx';
+import ReviewScreen    from './ReviewScreen.jsx';
+import RecipesScreen   from './RecipesScreen.jsx';
+import CategoriesScreen from './CategoriesScreen.jsx';
+import Toast           from './Toast.jsx';
 
 export default function App() {
   const [tab,          setTab]          = useState('scan');

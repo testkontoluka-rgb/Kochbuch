@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { calcNutrition } from '../utils/nutrition.js';
+import { calcNutrition } from './nutrition.js';
 import NutritionCard from './NutritionCard.jsx';
 import {
   IconArrowLeft, IconPlus, IconTrash, IconChevronRight, IconX,
